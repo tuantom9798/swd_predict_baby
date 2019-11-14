@@ -1,0 +1,22 @@
+<!-- Copyright (c) Microsoft. All rights reserved. -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/face_thumbnail"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="20dp"/>
+
+    <ImageView
+        android:id="@+id/face_thumbnai2"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginLeft="80dp"/>
+
+
+</LinearLayout>
