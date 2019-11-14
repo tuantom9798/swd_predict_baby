@@ -363,7 +363,6 @@ public class BabyPredictActivity extends AppCompatActivity {
                     imageView.setImageBitmap(ImageHelper.drawFaceRectanglesOnBitmap(
                             mBitmap1, result, true));
                     genderFace1 = face1[0].faceAttributes.gender.startsWith("male") ? 0 : 1;
-
                 }
             }
         } else {
@@ -563,7 +562,7 @@ public class BabyPredictActivity extends AppCompatActivity {
                 // Show the face thumbnail.
                 ((ImageView) convertView.findViewById(R.id.face_thumbnail)).setImageBitmap(
                         faceThumbnails.get(index));
-                urlImage = new ConnectAPICustomBabyPredict().connectAPI(urlImage,genderOfBaby,skinOfBaby);
+                urlImage = new ConnectAPICustomBabyPredict().connectAPI(urlImage,genderOfBaby,skinOfBaby,index);
 
                 Picasso
                         .get()
