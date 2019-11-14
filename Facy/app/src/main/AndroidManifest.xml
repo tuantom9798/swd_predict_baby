@@ -42,78 +42,10 @@
             android:launchMode="singleTop"
             android:screenOrientation="portrait"></activity>
         <activity
-            android:name=".ui.DetectionActivity"
-            android:label="@string/detection"
-            android:launchMode="singleTop"
-            android:parentActivityName=".ui.MainActivity"
-            android:screenOrientation="portrait">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ui.MainActivity" />
-        </activity>
-        <activity
-            android:name=".ui.FindSimilarFaceActivity"
-            android:label="@string/find_similar_faces"
-            android:launchMode="singleTop"
-            android:parentActivityName=".ui.MainActivity"
-            android:screenOrientation="portrait">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ui.MainActivity" />
-        </activity>
-        <activity
             android:name=".ui.SelectImageActivity"
             android:label="@string/select_an_image"
             android:screenOrientation="portrait" />
-        <activity
-            android:name=".persongroupmanagement.PersonGroupActivity"
-            android:label="@string/person_group"
-            android:launchMode="singleTop"
-            android:parentActivityName=".persongroupmanagement.PersonGroupListActivity"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustNothing">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".persongroupmanagement.PersonGroupListActivity" />
-        </activity>
-        <activity
-            android:name=".persongroupmanagement.PersonActivity"
-            android:label="@string/person"
-            android:launchMode="singleTop"
-            android:parentActivityName=".persongroupmanagement.PersonGroupActivity"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustNothing">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".persongroupmanagement.PersonGroupActivity" />
-        </activity>
-        <activity
-            android:name=".persongroupmanagement.AddFaceToPersonActivity"
-            android:label="@string/add_face_to_person"
-            android:parentActivityName=".persongroupmanagement.PersonActivity"
-            android:screenOrientation="portrait">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".persongroupmanagement.PersonActivity" />
-        </activity>
-        <activity
-            android:name=".log.DetectionLogActivity"
-            android:label="@string/detection_log"
-            android:parentActivityName=".ui.DetectionActivity"
-            android:screenOrientation="portrait">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ui.DetectionActivity" />
-        </activity>
-        <activity
-            android:name=".log.FindSimilarFaceLogActivity"
-            android:label="@string/find_similar_face_log"
-            android:parentActivityName=".ui.FindSimilarFaceActivity"
-            android:screenOrientation="portrait">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ui.FindSimilarFaceActivity" />
-        </activity>
+
     </application>
 
 </manifest>

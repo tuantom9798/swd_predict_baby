@@ -1,5 +1,6 @@
 package com.microsoft.projectoxford.face.samples.ui;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -23,8 +24,10 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.share.model.ShareLinkContent;
 import com.facebook.share.model.SharePhoto;
 import com.facebook.share.model.SharePhotoContent;
+import com.facebook.share.widget.ShareDialog;
 import com.microsoft.projectoxford.face.FaceServiceClient;
 import com.microsoft.projectoxford.face.contract.Accessory;
 import com.microsoft.projectoxford.face.contract.Emotion;
@@ -113,6 +116,25 @@ public class BabyPredictActivity extends AppCompatActivity {
             } else if (check == 1) {
                 setUiAfterDetection(result, mSucceed, 1);
             }
+        }
+    }
+
+    private class GetImagesBitmap extends AsyncTask<URL, Integer, Long> {
+        protected Long doInBackground(URL... urls) {
+            int count = urls.length;
+            long totalSize = 0;
+            for (int i = 0; i < count; i++) {
+                // Escape early if cancel() is called
+                Bitmap image = null;
+                try {
+                    image = BitmapFactory.decodeStream(urls[i].openConnection().getInputStream());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                bitmapArray.add(image);
+                if (isCancelled()) break;
+            }
+            return totalSize;
         }
     }
 
@@ -292,18 +314,26 @@ public class BabyPredictActivity extends AppCompatActivity {
 //                mIntentFacebook.setType("text/plain");
 //                mIntentFacebook.putExtra("android.intent.extra.TEXT", urlImage);
 //                startActivity(mIntentFacebook);
+
                 List<SharePhoto> photos = new ArrayList<SharePhoto>();
 
                 for (int i = 0; i < bitmapArray.size(); i++) {
-                    photos.add((new SharePhoto.Builder().setBitmap(
-                            bitmapArray.get(i)
-                    ).build()));
+                    if(bitmapArray.get(i) != null) {
+                        photos.add((new SharePhoto.Builder().setBitmap(
+                                bitmapArray.get(i)
+                        ).build()));
+                    }
                 }
+                Log.i("asd", photos.toString());
 
                 SharePhotoContent content = new SharePhotoContent.Builder()
                         .setPhotos(photos)
                         .build();
-                Log.i("as", bitmapArray.toString());
+                ShareDialog shareDialog;
+                if (ShareDialog.canShow(SharePhotoContent.class)) {
+                    shareDialog = new ShareDialog(this);
+                    shareDialog.show(content);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 Intent mIntentFacebookBrowser = new Intent(Intent.ACTION_SEND);
@@ -382,7 +412,6 @@ public class BabyPredictActivity extends AppCompatActivity {
                     imageView.setImageBitmap(ImageHelper.drawFaceRectanglesOnBitmap(
                             mBitmap1, result, true));
                     genderFace1 = face1[0].faceAttributes.gender.startsWith("male") ? 0 : 1;
-
                 }
             }
         } else {
@@ -399,11 +428,8 @@ public class BabyPredictActivity extends AppCompatActivity {
 
                 }
             }
-
             checkInputImage(face1, face2);
             count = 0;
-
-
         }
     }
 
@@ -446,8 +472,6 @@ public class BabyPredictActivity extends AppCompatActivity {
             // Show the detailed list of detected faces.
             listFaceDetected.setAdapter(faceListAdapter);
 
-
-//             getImageBaby();
             detectionResult = getString(R.string.found_baby) + " " + count + " Baby" +
                     (count != 1 ? "s" : "");
             setInfo(detectionResult);
@@ -576,6 +600,7 @@ public class BabyPredictActivity extends AppCompatActivity {
                 LayoutInflater layoutInflater =
                         (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 convertView = layoutInflater.inflate(R.layout.item_image_face, parent, false);
+                bitmapArray.clear();
             }
             while (index < faceThumbnails.size()) {
                 convertView.setId(index);
@@ -583,12 +608,10 @@ public class BabyPredictActivity extends AppCompatActivity {
                 // Show the face thumbnail.
                 ((ImageView) convertView.findViewById(R.id.face_thumbnail)).setImageBitmap(
                         faceThumbnails.get(index));
-                urlImage = new ConnectAPICustomBabyPredict().connectAPI(urlImage, genderOfBaby, skinOfBaby);
+                urlImage = new ConnectAPICustomBabyPredict().connectAPI(urlImage, genderOfBaby, skinOfBaby, index);
                 try {
                     URL url = new URL(urlImage);
-                    Log.i("URL", url.toString());
-                    Bitmap image = BitmapFactory.decodeStream(url.openConnection().getInputStream());
-                    bitmapArray.add(image);
+                    new GetImagesBitmap().execute(url);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -603,7 +626,5 @@ public class BabyPredictActivity extends AppCompatActivity {
 
             return convertView;
         }
-
-
     }
 }
