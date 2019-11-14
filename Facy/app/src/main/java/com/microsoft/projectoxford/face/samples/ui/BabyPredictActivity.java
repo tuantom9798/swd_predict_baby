@@ -439,33 +439,18 @@ public class BabyPredictActivity extends AppCompatActivity {
              return;
          }
     }
-//    private boolean checkSameGenderOfFace2(Face[] face2){
-//        for(Face f2: face2){
-//            if(f2.faceAttributes.gender.startsWith("male") && genderFace1 == 1
-//                    || f2.faceAttributes.gender.startsWith("female") && genderFace1 == 0){
-//                return true;
-//            }
-//        }
-//        return true;
-//    }
+
 
     private boolean checkGender( Face[] face2){
         for(Face f2: face2){
-            if(f2.faceAttributes.gender.startsWith("male") && genderFace1 == 0
-                || f2.faceAttributes.gender.startsWith("female") && genderFace1 == 1){
-                return false;
+            if(f2.faceAttributes.gender.startsWith("male") && genderFace1 == 1
+                    || f2.faceAttributes.gender.startsWith("female") && genderFace1 == 0){
+                return true;
             }
         }
 
-        return true;
+        return false;
     }
-//    private void getImageBaby() {
-//        ConnectAPICustomBabyPredict connectAPICustomBabyPredict = new ConnectAPICustomBabyPredict();
-//        urlImage = connectAPICustomBabyPredict.connectAPI(urlImage,genderOfBaby,skinOfBaby);
-//        //Loading image using Picasso
-////        Picasso.get().load(urlImage).resize(50, 50).into();
-//        Toast.makeText(this,urlImage,Toast.LENGTH_LONG).show();
-//    }
 
     public void onRadioButtonGenderClicked(View view) {
         // Is the button now checked?
@@ -508,6 +493,7 @@ public class BabyPredictActivity extends AppCompatActivity {
 
         // The thumbnails of detected faces.
         List<Bitmap> faceThumbnails;
+        int index = 0;
 
         // Initialize with detection result.
         FaceListAdapter( Face[] face2) {
@@ -516,7 +502,7 @@ public class BabyPredictActivity extends AppCompatActivity {
 
             if (face2 != null) {
                 faces2 = Arrays.asList(face2);
-                if(genderFace1 == 0 ){
+                if(genderFace1 == 0){
                     for (Face face : faces2) {
                         try {
                             // Crop face thumbnail with five main landmarks drawn from original image.
@@ -576,20 +562,22 @@ public class BabyPredictActivity extends AppCompatActivity {
                         (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 convertView = layoutInflater.inflate(R.layout.item_image_face, parent, false);
             }
-            convertView.setId(position);
+            while (index < faceThumbnails.size()){
+                convertView.setId(index);
 
-            // Show the face thumbnail.
-            ((ImageView) convertView.findViewById(R.id.face_thumbnail)).setImageBitmap(
-                    faceThumbnails.get(position));
-            urlImage = new ConnectAPICustomBabyPredict().connectAPI(urlImage,genderOfBaby,skinOfBaby);
+                // Show the face thumbnail.
+                ((ImageView) convertView.findViewById(R.id.face_thumbnail)).setImageBitmap(
+                        faceThumbnails.get(index));
+                urlImage = new ConnectAPICustomBabyPredict().connectAPI(urlImage,genderOfBaby,skinOfBaby);
 
-            Picasso
-                   .get()
-                    .load(urlImage)
-                    .fit() // will explain later
-                    .into((ImageView)convertView.findViewById(R.id.face_thumbnai2));
-
-
+                Picasso
+                        .get()
+                        .load(urlImage)
+                        .fit() // will explain later
+                        .into((ImageView)convertView.findViewById(R.id.face_thumbnai2));
+                index++;
+                break;
+            }
 
             return convertView;
         }
