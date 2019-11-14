@@ -66,10 +66,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void detection(View view) {
-        Intent intent = new Intent(this, DetectionActivity.class);
-        startActivity(intent);
-    }
 
 
     public void babyPredict(View view) {
@@ -77,9 +73,5 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    public void findSimilarFace(View view) {
-        Intent intent = new Intent(this, FindSimilarFaceActivity.class);
-        startActivity(intent);
-    }
 
 }

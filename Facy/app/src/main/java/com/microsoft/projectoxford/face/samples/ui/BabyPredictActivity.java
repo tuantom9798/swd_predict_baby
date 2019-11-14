@@ -380,11 +380,8 @@ public class BabyPredictActivity extends AppCompatActivity {
 
                 }
             }
-
             checkInputImage(face1,face2);
             count = 0;
-
-
         }
     }
 
@@ -430,8 +427,6 @@ public class BabyPredictActivity extends AppCompatActivity {
              // Show the detailed list of detected faces.
              listFaceDetected.setAdapter(faceListAdapter);
 
-
-//             getImageBaby();
              detectionResult = getString(R.string.found_baby)+" "+count + " Baby"+
                      (count != 1 ? "s" : "");
              setInfo(detectionResult);
@@ -581,7 +576,5 @@ public class BabyPredictActivity extends AppCompatActivity {
 
             return convertView;
         }
-
-
     }
 }
