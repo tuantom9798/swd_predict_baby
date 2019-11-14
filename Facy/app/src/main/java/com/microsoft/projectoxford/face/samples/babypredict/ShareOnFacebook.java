@@ -1,28 +1,44 @@
 package com.microsoft.projectoxford.face.samples.babypredict;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.view.View;
 
+import com.facebook.share.model.SharePhoto;
+import com.facebook.share.model.SharePhotoContent;
+import com.facebook.share.widget.ShareDialog;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class ShareOnFacebook {
-    public Intent share(String urlImage) {
-        if(urlImage != "") {
-            try {
-                Intent mIntentFacebook = new Intent();
-                mIntentFacebook.setClassName("com.facebook.katana",
-                        "com.facebook.composer.shareintent.ImplicitShareIntentHandlerDefaultAlias");
-                mIntentFacebook.setAction("android.intent.action.SEND");
-                mIntentFacebook.setType("text/plain");
-                mIntentFacebook.putExtra("android.intent.extra.TEXT", urlImage);
-                return mIntentFacebook;
-            } catch (Exception e) {
-                e.printStackTrace();
-                Intent mIntentFacebookBrowser = new Intent(Intent.ACTION_SEND);
-                String mStringURL = "https://www.facebook.com/sharer/sharer.php?u=" + urlImage;
-                mIntentFacebookBrowser = new Intent(Intent.ACTION_VIEW, Uri.parse(mStringURL));
-                return mIntentFacebookBrowser;
+    private ArrayList<Bitmap> bitmapArray = new ArrayList<Bitmap>();
+    private Activity babyActivity;
+
+    public ShareOnFacebook(ArrayList<Bitmap> bitmapArray, Activity babyActivity) {
+        this.bitmapArray = bitmapArray;
+        this.babyActivity = babyActivity;
+    }
+
+    public void share() {
+        List<SharePhoto> photos = new ArrayList<SharePhoto>();
+
+        for (int i = 0; i < bitmapArray.size(); i++) {
+            if(bitmapArray.get(i) != null) {
+                photos.add((new SharePhoto.Builder().setBitmap(
+                        bitmapArray.get(i)
+                ).build()));
             }
         }
-        return null;
+        SharePhotoContent content = new SharePhotoContent.Builder()
+                .setPhotos(photos)
+                .build();
+        ShareDialog shareDialog;
+        if (ShareDialog.canShow(SharePhotoContent.class)) {
+            shareDialog = new ShareDialog(this.babyActivity);
+            shareDialog.show(content);
+        }
     }
 }

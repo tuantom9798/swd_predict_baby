@@ -38,6 +38,7 @@ import com.microsoft.projectoxford.face.contract.HeadPose;
 import com.microsoft.projectoxford.face.contract.Makeup;
 import com.microsoft.projectoxford.face.samples.R;
 import com.microsoft.projectoxford.face.samples.babypredict.ConnectAPICustomBabyPredict;
+import com.microsoft.projectoxford.face.samples.babypredict.ShareOnFacebook;
 import com.microsoft.projectoxford.face.samples.helper.ImageHelper;
 import com.microsoft.projectoxford.face.samples.helper.SampleApp;
 import com.squareup.picasso.Picasso;
@@ -307,33 +308,7 @@ public class BabyPredictActivity extends AppCompatActivity {
     public void share(View view) {
         if (urlImage != "") {
             try {
-//                Intent mIntentFacebook = new Intent();
-//                mIntentFacebook.setClassName("com.facebook.katana",
-//                        "com.facebook.composer.shareintent.ImplicitShareIntentHandlerDefaultAlias");
-//                mIntentFacebook.setAction("android.intent.action.SEND");
-//                mIntentFacebook.setType("text/plain");
-//                mIntentFacebook.putExtra("android.intent.extra.TEXT", urlImage);
-//                startActivity(mIntentFacebook);
-
-                List<SharePhoto> photos = new ArrayList<SharePhoto>();
-
-                for (int i = 0; i < bitmapArray.size(); i++) {
-                    if(bitmapArray.get(i) != null) {
-                        photos.add((new SharePhoto.Builder().setBitmap(
-                                bitmapArray.get(i)
-                        ).build()));
-                    }
-                }
-                Log.i("asd", photos.toString());
-
-                SharePhotoContent content = new SharePhotoContent.Builder()
-                        .setPhotos(photos)
-                        .build();
-                ShareDialog shareDialog;
-                if (ShareDialog.canShow(SharePhotoContent.class)) {
-                    shareDialog = new ShareDialog(this);
-                    shareDialog.show(content);
-                }
+                new ShareOnFacebook(bitmapArray, this).share();
             } catch (Exception e) {
                 e.printStackTrace();
                 Intent mIntentFacebookBrowser = new Intent(Intent.ACTION_SEND);
