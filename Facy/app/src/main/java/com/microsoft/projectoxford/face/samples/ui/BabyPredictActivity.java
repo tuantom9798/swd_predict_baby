@@ -1,15 +1,18 @@
 package com.microsoft.projectoxford.face.samples.ui;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +24,10 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.share.model.ShareLinkContent;
+import com.facebook.share.model.SharePhoto;
+import com.facebook.share.model.SharePhotoContent;
+import com.facebook.share.widget.ShareDialog;
 import com.microsoft.projectoxford.face.FaceServiceClient;
 import com.microsoft.projectoxford.face.contract.Accessory;
 import com.microsoft.projectoxford.face.contract.Emotion;
@@ -31,13 +38,16 @@ import com.microsoft.projectoxford.face.contract.HeadPose;
 import com.microsoft.projectoxford.face.contract.Makeup;
 import com.microsoft.projectoxford.face.samples.R;
 import com.microsoft.projectoxford.face.samples.babypredict.ConnectAPICustomBabyPredict;
+import com.microsoft.projectoxford.face.samples.babypredict.ShareOnFacebook;
 import com.microsoft.projectoxford.face.samples.helper.ImageHelper;
 import com.microsoft.projectoxford.face.samples.helper.SampleApp;
 import com.squareup.picasso.Picasso;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -110,6 +120,25 @@ public class BabyPredictActivity extends AppCompatActivity {
         }
     }
 
+    private class GetImagesBitmap extends AsyncTask<URL, Integer, Long> {
+        protected Long doInBackground(URL... urls) {
+            int count = urls.length;
+            long totalSize = 0;
+            for (int i = 0; i < count; i++) {
+                // Escape early if cancel() is called
+                Bitmap image = null;
+                try {
+                    image = BitmapFactory.decodeStream(urls[i].openConnection().getInputStream());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                bitmapArray.add(image);
+                if (isCancelled()) break;
+            }
+            return totalSize;
+        }
+    }
+
     // check number image
     private int check = 0;
 
@@ -120,6 +149,7 @@ public class BabyPredictActivity extends AppCompatActivity {
     private String skinOfBaby = "light";
 
     ListView listFaceDetected;
+    public ArrayList<Bitmap> bitmapArray = new ArrayList<Bitmap>();
 
 
     // Check two image input are detected face
@@ -276,15 +306,9 @@ public class BabyPredictActivity extends AppCompatActivity {
 
     // Called when the "share" button is clicked.
     public void share(View view) {
-        if(urlImage != "") {
+        if (urlImage != "") {
             try {
-                Intent mIntentFacebook = new Intent();
-                mIntentFacebook.setClassName("com.facebook.katana",
-                        "com.facebook.composer.shareintent.ImplicitShareIntentHandlerDefaultAlias");
-                mIntentFacebook.setAction("android.intent.action.SEND");
-                mIntentFacebook.setType("text/plain");
-                mIntentFacebook.putExtra("android.intent.extra.TEXT", urlImage);
-                startActivity(mIntentFacebook);
+                new ShareOnFacebook(bitmapArray, this).share();
             } catch (Exception e) {
                 e.printStackTrace();
                 Intent mIntentFacebookBrowser = new Intent(Intent.ACTION_SEND);
@@ -294,7 +318,6 @@ public class BabyPredictActivity extends AppCompatActivity {
             }
         }
     }
-
 
 
     // Set the information panel on screen.
@@ -339,6 +362,7 @@ public class BabyPredictActivity extends AppCompatActivity {
 
     Face[] face1, face2;
     int count = 0;
+
     // Show the result on screen when detection is done.
     private void setUiAfterDetection(Face[] result, boolean succeed, int checkImage) {
 
@@ -379,66 +403,63 @@ public class BabyPredictActivity extends AppCompatActivity {
 
                 }
             }
-            checkInputImage(face1,face2);
+            checkInputImage(face1, face2);
             count = 0;
         }
     }
 
-    private void checkInputImage(Face[] face1, Face[] face2){
+    private void checkInputImage(Face[] face1, Face[] face2) {
         String detectionResult;
-         if(!foundFace1 || !foundFace2){
-            setShareButtonsEnabledStatus(false);
-             FaceListAdapter faceListAdapter = new FaceListAdapter(null);
-             // Show the detailed list of detected faces.
-             listFaceDetected.setAdapter(faceListAdapter);
-            foundFace1 = foundFace2 = false;
-            genderFace1  = 0;
-            detectionResult = getString(R.string.not_found_baby);
-            setInfo(detectionResult);
-            return;
-        }
-        else if(face1.length > 1){
-            setShareButtonsEnabledStatus(false);
-             FaceListAdapter faceListAdapter = new FaceListAdapter(null);
-             // Show the detailed list of detected faces.
-             listFaceDetected.setAdapter(faceListAdapter);
-            foundFace1 = foundFace2 = false;
-            genderFace1  = 0;
-            detectionResult = getString(R.string.check_image1);
-            setInfo(detectionResult);
-            return;
-        }
-        else if(!checkGender(face2)){
+        if (!foundFace1 || !foundFace2) {
             setShareButtonsEnabledStatus(false);
             FaceListAdapter faceListAdapter = new FaceListAdapter(null);
             // Show the detailed list of detected faces.
             listFaceDetected.setAdapter(faceListAdapter);
             foundFace1 = foundFace2 = false;
-            genderFace1  = 0;
+            genderFace1 = 0;
+            detectionResult = getString(R.string.not_found_baby);
+            setInfo(detectionResult);
+            return;
+        } else if (face1.length > 1) {
+            setShareButtonsEnabledStatus(false);
+            FaceListAdapter faceListAdapter = new FaceListAdapter(null);
+            // Show the detailed list of detected faces.
+            listFaceDetected.setAdapter(faceListAdapter);
+            foundFace1 = foundFace2 = false;
+            genderFace1 = 0;
+            detectionResult = getString(R.string.check_image1);
+            setInfo(detectionResult);
+            return;
+        } else if (!checkGender(face2)) {
+            setShareButtonsEnabledStatus(false);
+            FaceListAdapter faceListAdapter = new FaceListAdapter(null);
+            // Show the detailed list of detected faces.
+            listFaceDetected.setAdapter(faceListAdapter);
+            foundFace1 = foundFace2 = false;
+            genderFace1 = 0;
             detectionResult = getString(R.string.same_gender);
             setInfo(detectionResult);
             return;
-        }
-        else {
-             setShareButtonsEnabledStatus(true);
-             foundFace1 = foundFace2 = false;
-             FaceListAdapter faceListAdapter = new FaceListAdapter(face2);
-             // Show the detailed list of detected faces.
-             listFaceDetected.setAdapter(faceListAdapter);
+        } else {
+            setShareButtonsEnabledStatus(true);
+            foundFace1 = foundFace2 = false;
+            FaceListAdapter faceListAdapter = new FaceListAdapter(face2);
+            // Show the detailed list of detected faces.
+            listFaceDetected.setAdapter(faceListAdapter);
 
-             detectionResult = getString(R.string.found_baby)+" "+count + " Baby"+
-                     (count != 1 ? "s" : "");
-             setInfo(detectionResult);
-             genderFace1  = 0;
-             return;
-         }
+            detectionResult = getString(R.string.found_baby) + " " + count + " Baby" +
+                    (count != 1 ? "s" : "");
+            setInfo(detectionResult);
+            genderFace1 = 0;
+            return;
+        }
     }
 
 
-    private boolean checkGender( Face[] face2){
-        for(Face f2: face2){
-            if(f2.faceAttributes.gender.startsWith("male") && genderFace1 == 1
-                    || f2.faceAttributes.gender.startsWith("female") && genderFace1 == 0){
+    private boolean checkGender(Face[] face2) {
+        for (Face f2 : face2) {
+            if (f2.faceAttributes.gender.startsWith("male") && genderFace1 == 1
+                    || f2.faceAttributes.gender.startsWith("female") && genderFace1 == 0) {
                 return true;
             }
         }
@@ -490,35 +511,34 @@ public class BabyPredictActivity extends AppCompatActivity {
         int index = 0;
 
         // Initialize with detection result.
-        FaceListAdapter( Face[] face2) {
+        FaceListAdapter(Face[] face2) {
             faces2 = new ArrayList<>();
             faceThumbnails = new ArrayList<>();
 
             if (face2 != null) {
                 faces2 = Arrays.asList(face2);
-                if(genderFace1 == 0){
+                if (genderFace1 == 0) {
                     for (Face face : faces2) {
                         try {
                             // Crop face thumbnail with five main landmarks drawn from original image.
-                            if(face.faceAttributes.gender.startsWith("female")){
+                            if (face.faceAttributes.gender.startsWith("female")) {
                                 faceThumbnails.add(ImageHelper.generateFaceThumbnail(
                                         mBitmap2, face.faceRectangle));
-                                count ++;
+                                count++;
                             }
                         } catch (IOException e) {
                             // Show the exception when generating face thumbnail fails.
                             setInfo(e.getMessage());
                         }
                     }
-                }
-                else {
+                } else {
                     for (Face face : faces2) {
                         try {
                             // Crop face thumbnail with five main landmarks drawn from original image.
-                            if(face.faceAttributes.gender.startsWith("male")){
+                            if (face.faceAttributes.gender.startsWith("male")) {
                                 faceThumbnails.add(ImageHelper.generateFaceThumbnail(
                                         mBitmap2, face.faceRectangle));
-                                count ++;
+                                count++;
                             }
                         } catch (IOException e) {
                             // Show the exception when generating face thumbnail fails.
@@ -555,20 +575,26 @@ public class BabyPredictActivity extends AppCompatActivity {
                 LayoutInflater layoutInflater =
                         (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 convertView = layoutInflater.inflate(R.layout.item_image_face, parent, false);
+                bitmapArray.clear();
             }
-            while (index < faceThumbnails.size()){
+            while (index < faceThumbnails.size()) {
                 convertView.setId(index);
 
                 // Show the face thumbnail.
                 ((ImageView) convertView.findViewById(R.id.face_thumbnail)).setImageBitmap(
                         faceThumbnails.get(index));
-                urlImage = new ConnectAPICustomBabyPredict().connectAPI(urlImage,genderOfBaby,skinOfBaby,index);
-
+                urlImage = new ConnectAPICustomBabyPredict().connectAPI(urlImage, genderOfBaby, skinOfBaby, index);
+                try {
+                    URL url = new URL(urlImage);
+                    new GetImagesBitmap().execute(url);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 Picasso
                         .get()
                         .load(urlImage)
                         .fit() // will explain later
-                        .into((ImageView)convertView.findViewById(R.id.face_thumbnai2));
+                        .into((ImageView) convertView.findViewById(R.id.face_thumbnai2));
                 index++;
                 break;
             }
